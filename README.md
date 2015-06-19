@@ -1,6 +1,10 @@
 # leafletDrilldown
 
-I've been able to successfully implement a drill-down going from country to state/province with an info control that changes on hover, but it's still incredibly buggy. For example, I can't quite figure out how to modify the drill-down behavior (using observeEvent) once it's already at the lowest level, state in this case. So my app just completely crashes when clicking on a state level polygon.
+I've been able to successfully implement a drill-down going from country to state/province with an info control that changes on hover, but it's still incredibly buggy. For example, I can't quite figure out how to modify the drill-down behavior (using observeEvent) once it's already at the lowest level, state in this case. So my app just completely crashes when clicking on a state level polygon with the following message: 
+
+  Warning: Unhandled error in observer: missing value where TRUE/FALSE needed
+  observeEvent(input$mymap_shape_click)
+
 
 To help, just fork this repo and download the files. Once you unzip the two folders with the shape files, it should be fully reproducible.
 
