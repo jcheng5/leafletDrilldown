@@ -18,3 +18,5 @@ Issues:
 
 
 BTW, in testing the drill-down functionality, I've only tried US, Canada, and Mexico. Mexico doesn't work, and I'm just assuming it's due to name differences in the two data sets (hopefully). So for testing just stick with US and Canada.
+
+The shape files for countries and states/provinces come from Natural Earth. See http://www.naturalearthdata.com/downloads/10m-cultural-vectors/.
