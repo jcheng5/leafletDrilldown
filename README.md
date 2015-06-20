@@ -14,7 +14,7 @@ Issues:
 
 2. A closely related issue is that the hover info control does not work at the state level. I believe solving #1 will simultaneously solve #2.
 
-3. The length of time from starting the app to the first map loading is way too long. Any suggestions for speeding it up? I actually bumped the smoothFactor from 0 to 0.5, and it didn't seem to make a difference. Fortunately, leafletProxy works pretty quickly when drilling down.
+3. The length of time from starting the app to the first map loading is way too long. Same goes for resetting to the country map using the action button. Any suggestions for speeding it up? Could using another data format like geoJSON improve performance? I actually bumped the smoothFactor from 0 to 0.5, and it didn't seem to make a difference. Fortunately, leafletProxy works pretty quickly when drilling down.
 
 
 BTW, in testing the drill-down functionality, I've only tried US, Canada, and Mexico. Mexico doesn't work, and I'm just assuming it's due to name differences in the two data sets (hopefully). So for testing just stick with US and Canada.
