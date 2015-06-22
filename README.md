@@ -16,6 +16,9 @@ Issues:
 
 3. The length of time from starting the app to the first map loading is way too long. Same goes for resetting to the country map using the action button. Any suggestions for speeding it up? Could using another data format like geoJSON improve performance? I actually bumped the smoothFactor from 0 to 0.5, and it didn't seem to make a difference. Fortunately, leafletProxy works pretty quickly when drilling down.
 
+4. The last issue I'd like to resolve is with the info control. Ideally, it would operate like http://leafletjs.com/examples/choropleth.html where it can tell when you're not over a country and adjust the information accordingly. It doesn't seem like I'll be able to use input$mymap_shape_mouseover or input$mymap_shape_mouseout for that. Any other strategies to include this funtionality?
+
+
 
 BTW, in testing the drill-down functionality, I've only tried US, Canada, and Mexico. Mexico doesn't work, and I'm just assuming it's due to name differences in the two data sets (hopefully). So for testing just stick with US and Canada.
 
