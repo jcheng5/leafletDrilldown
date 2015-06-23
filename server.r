@@ -20,13 +20,16 @@ states <- readOGR(dsn = "ne_10m_admin_1_states_provinces/ne_10m_admin_1_states_p
                   layer = "ne_10m_admin_1_states_provinces")
 states@data$geonunit <- factor(states@data$geonunit, levels = c(levels(states@data$geonunit), "Unknown"))
 states@data$geonunit[is.na(states@data$geonunit)] <- "Unknown"
-
+states@data$name <- factor(states@data$name, levels = c(levels(states@data$name), "Unknown"))
+states@data$name[is.na(states@data$name)] <- "Unknown"
+statesSub <- states
+statesSubDF <- states@data
 
 # Create the country map at app initialization
 paletteCountry <- colorQuantile("YlGnBu", countries$POP_EST, n = 10)
 info <- paste0("Hover over a country to view information.")
 
-mapCountry <- leaflet(countries) %>%
+map <- leaflet(countries) %>%
   addProviderTiles(provider = "Stamen.TonerLite") %>%
   addPolygons(layerId = ~NAME_LONG, 
               stroke = FALSE, fillOpacity = 0.5, smoothFactor = 0.5,
@@ -35,8 +38,6 @@ mapCountry <- leaflet(countries) %>%
   addLegend(title = c("Population"), position = "bottomright", pal = paletteCountry, values = ~POP_EST) %>%
   addControl(layerId = "infoControl", html = info, position = "topright", classes = "info")
 
-# Initialize ind variable in the global environment
-ind <- "c"
 
 ############################################################################
 # Define server logic
@@ -50,9 +51,12 @@ shinyServer(function(input, output, session) {
 
   #output$indTest <- renderPrint({ind})
   
+  # Initialize ind variable in the global environment
+  ind <- "c"
+  
   ### initialize map at country level
   output$mymap <- renderLeaflet({
-    mapCountry
+    map
   })
 
   # if the map is at the country level, then display country information
@@ -77,10 +81,12 @@ shinyServer(function(input, output, session) {
         
       #output$boolean <- renderPrint({"ELSE"})
   
-      statesSub <- states[factor(states$geonunit) == input$mymap_shape_click$id,]
-      infoState <- paste0("<b>State: </b>", statesSub$name, "<br><b>GN Level: </b>", statesSub$gn_level)
-    
+      #statesSub <- states[factor(states$geonunit) == input$mymap_shape_click$id,]
+      
+      infoState <- paste0("<b>State: </b>", statesSubDF[statesSubDF$name == input$mymap_shape_mouseover$id,]$name, "<br><b>GN Level: </b>", statesSubDF[statesSubDF$name == input$mymap_shape_mouseover$id,]$gn_level)
+      output$statesSub <- renderPrint({print(infoState)})
       leafletProxy("mymap") %>%
+        removeControl(layerId = "infoControl") %>%
         addControl(layerId = "infoControl", html = infoState, position = "topright", classes = "info")
       }
     
@@ -96,8 +102,10 @@ shinyServer(function(input, output, session) {
       
     ### State
 
-      statesSub <- states[factor(states$geonunit) == input$mymap_shape_click$id,]
+      statesSub <<- states[grepl(input$mymap_shape_click$id, factor(states$geonunit)),]
+      statesSubDF <<- statesSub@data
       paletteState <- colorFactor(palette = "YlGnBu", domain = statesSub$gn_level)
+      info <- paste0("Hover over a state to view information.")
       
       leafletProxy(mapId = "mymap", data = statesSub) %>%
         clearShapes() %>%
@@ -108,7 +116,8 @@ shinyServer(function(input, output, session) {
                     smoothFactor = 0,
                     color = ~paletteState(gn_level)
         ) %>%
-        addLegend(title = c("GN Level"), position = "bottomright", pal = paletteState, values = ~gn_level)
+        addLegend(title = c("GN Level"), position = "bottomright", pal = paletteState, values = ~gn_level) %>%
+        addControl(layerId = "infoControl", html = info, position = "topright", classes = "info")
 
       ind <<- "s"
       
@@ -125,7 +134,7 @@ shinyServer(function(input, output, session) {
   observeEvent(input$countryAction, {
     
     output$mymap <- renderLeaflet({
-      mapCountry
+      map
       
     })
     
