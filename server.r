@@ -31,6 +31,7 @@ info <- paste0("Hover over a country to view information.")
 
 map <- leaflet(countries) %>%
   addProviderTiles(provider = "Stamen.TonerLite") %>%
+  setView(lng = 0, lat = 0, zoom = 2) %>%
   addPolygons(layerId = ~NAME_LONG, 
               stroke = FALSE, fillOpacity = 0.5, smoothFactor = 0.5,
               color = ~paletteCountry(POP_EST)
@@ -83,8 +84,8 @@ shinyServer(function(input, output, session) {
   
       #statesSub <- states[factor(states$geonunit) == input$mymap_shape_click$id,]
       
-      infoState <- paste0("<b>State: </b>", statesSubDF[statesSubDF$name == input$mymap_shape_mouseover$id,]$name, "<br><b>GN Level: </b>", statesSubDF[statesSubDF$name == input$mymap_shape_mouseover$id,]$gn_level)
-      output$statesSub <- renderPrint({print(infoState)})
+      infoState <- paste0("<b>State: </b>", statesSubDF[statesSubDF$name == input$mymap_shape_mouseover$id,]$name, "<br><b>Name Length: </b>", statesSubDF[statesSubDF$name == input$mymap_shape_mouseover$id,]$name_len)
+
       leafletProxy("mymap") %>%
         removeControl(layerId = "infoControl") %>%
         addControl(layerId = "infoControl", html = infoState, position = "topright", classes = "info")
@@ -104,7 +105,7 @@ shinyServer(function(input, output, session) {
 
       statesSub <<- states[grepl(input$mymap_shape_click$id, factor(states$geonunit)),]
       statesSubDF <<- statesSub@data
-      paletteState <- colorFactor(palette = "YlGnBu", domain = statesSub$gn_level)
+      paletteState <- colorFactor(palette = "YlGnBu", domain = sort(statesSub$name_len))
       info <- paste0("Hover over a state to view information.")
       
       leafletProxy(mapId = "mymap", data = statesSub) %>%
@@ -114,9 +115,9 @@ shinyServer(function(input, output, session) {
                     stroke = FALSE, 
                     fillOpacity = 0.5, 
                     smoothFactor = 0,
-                    color = ~paletteState(gn_level)
+                    color = ~paletteState(name_len)
         ) %>%
-        addLegend(title = c("GN Level"), position = "bottomright", pal = paletteState, values = ~gn_level) %>%
+        addLegend(title = c("GN Level"), position = "bottomright", pal = paletteState, values = ~sort(name_len)) %>%
         addControl(layerId = "infoControl", html = info, position = "topright", classes = "info")
 
       ind <<- "s"
