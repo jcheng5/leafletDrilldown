@@ -12,8 +12,8 @@ library(sp)
 # load country and state data; convert NA's to "Unknown"
 countries <- readOGR(dsn = "ne_10m_admin_0_countries/ne_10m_admin_0_countries.shp", 
                      layer = "ne_10m_admin_0_countries") 
-countries@data$FORMAL_EN <- factor(countries@data$FORMAL_EN, levels = c(levels(countries@data$FORMAL_EN), "Unknown"))
-countries@data$FORMAL_EN[is.na(countries@data$FORMAL_EN)] <- "Unknown"
+countries@data$NAME_LONG <- factor(countries@data$NAME_LONG, levels = c(levels(countries@data$NAME_LONG), "Unknown"))
+countries@data$NAME_LONG[is.na(countries@data$NAME_LONG)] <- "Unknown"
 countriesDF <- countries@data
 
 states <- readOGR(dsn = "ne_10m_admin_1_states_provinces/ne_10m_admin_1_states_provinces.shp", 
@@ -28,7 +28,7 @@ info <- paste0("Hover over a country to view information.")
 
 mapCountry <- leaflet(countries) %>%
   addProviderTiles(provider = "Stamen.TonerLite") %>%
-  addPolygons(layerId = ~FORMAL_EN, 
+  addPolygons(layerId = ~NAME_LONG, 
               stroke = FALSE, fillOpacity = 0.5, smoothFactor = 0.5,
               color = ~paletteCountry(POP_EST)
   ) %>%
@@ -65,7 +65,7 @@ shinyServer(function(input, output, session) {
       
 
       #output$boolean <- renderPrint({"IF"})
-      infoCountry <- paste0("<b>Country: </b>", countriesDF[countriesDF$FORMAL_EN == input$mymap_shape_mouseover$id,]$FORMAL_EN, "<br><b>Population: </b>", format(x = countries[countriesDF$FORMAL_EN == input$mymap_shape_mouseover$id,]$POP_EST, format = "d", big.mark = ","))
+      infoCountry <- paste0("<b>Country: </b>", countriesDF[countriesDF$NAME_LONG == input$mymap_shape_mouseover$id,]$NAME_LONG, "<br><b>Population: </b>", format(x = countries[countriesDF$NAME_LONG == input$mymap_shape_mouseover$id,]$POP_EST, format = "d", big.mark = ","))
       
       leafletProxy("mymap") %>%
         removeControl(layerId = "infoControl") %>%
