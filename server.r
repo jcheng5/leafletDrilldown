@@ -30,14 +30,18 @@ paletteCountry <- colorQuantile("YlGnBu", countries$POP_EST, n = 10)
 info <- paste0("Hover over a country to view information.")
 
 map <- leaflet(countries) %>%
-  addProviderTiles(provider = "Stamen.TonerLite") %>%
+  addTiles(group = "OSM") %>%
+  addProviderTiles(provider = "Stamen.TonerLite", group = "Stamen Toner Lite") %>%
   setView(lng = 0, lat = 0, zoom = 2) %>%
   addPolygons(layerId = ~NAME_LONG, 
               stroke = FALSE, fillOpacity = 0.5, smoothFactor = 0.5,
               color = ~paletteCountry(POP_EST)
   ) %>%
-  addLegend(title = c("Population"), position = "bottomright", pal = paletteCountry, values = ~POP_EST) %>%
-  addControl(layerId = "infoControl", html = info, position = "topright", classes = "info")
+  addLegend(layerId = "legend", title = c("Population"), position = "bottomright", pal = paletteCountry, values = ~POP_EST) %>%
+  addLayersControl(baseGroups = c("OSM", "Stamen Toner Lite"),
+                   options = layersControlOptions(collapsed = FALSE)) %>%
+  addControl(layerId = "infoControl", html = info, position = "topright", className = "info")
+  
 
 
 ############################################################################
@@ -68,18 +72,18 @@ shinyServer(function(input, output, session) {
     
     if(ind == "c"){
       
-
+      output$indTest1 <- renderPrint({paste0("one = ", ind)})
       #output$boolean <- renderPrint({"IF"})
       infoCountry <- paste0("<b>Country: </b>", countriesDF[countriesDF$NAME_LONG == input$mymap_shape_mouseover$id,]$NAME_LONG, "<br><b>Population: </b>", format(x = countries[countriesDF$NAME_LONG == input$mymap_shape_mouseover$id,]$POP_EST, format = "d", big.mark = ","))
       
       leafletProxy("mymap") %>%
         removeControl(layerId = "infoControl") %>%
-        addControl(layerId = "infoControl", html = infoCountry, position = "topright", classes = "info")
+        addControl(layerId = "infoControl", html = infoCountry, position = "topright", className = "info")
   
       #output$env <- renderPrint({parent.frame()})
       
     } else{
-        
+      output$indTest2 <- renderPrint({paste0("two = ", ind)})
       #output$boolean <- renderPrint({"ELSE"})
   
       #statesSub <- states[factor(states$geonunit) == input$mymap_shape_click$id,]
@@ -88,7 +92,7 @@ shinyServer(function(input, output, session) {
 
       leafletProxy("mymap") %>%
         removeControl(layerId = "infoControl") %>%
-        addControl(layerId = "infoControl", html = infoState, position = "topright", classes = "info")
+        addControl(layerId = "infoControl", html = infoState, position = "topright", className = "info")
       }
     
       #output$env <- renderPrint({parent.frame()})
@@ -98,7 +102,7 @@ shinyServer(function(input, output, session) {
 
   ### if click on country, render state map for just that country
   if(ind == "c"){
-    
+    output$indTest3 <- renderPrint({paste0("three = ", ind)})
     observeEvent(input$mymap_shape_click, {
       
     ### State
@@ -110,22 +114,24 @@ shinyServer(function(input, output, session) {
       
       leafletProxy(mapId = "mymap", data = statesSub) %>%
         clearShapes() %>%
-        clearControls() %>%
         addPolygons(layerId = ~name,
                     stroke = FALSE, 
                     fillOpacity = 0.5, 
                     smoothFactor = 0,
                     color = ~paletteState(name_len)
         ) %>%
-        addLegend(title = c("GN Level"), position = "bottomright", pal = paletteState, values = ~sort(name_len)) %>%
-        addControl(layerId = "infoControl", html = info, position = "topright", classes = "info")
-
-      ind <<- "s"
+        removeControl(layerId = "legend") %>%
+        addLegend(title = c("Name Length"), position = "bottomright", pal = paletteState, values = ~sort(name_len)) %>%
+        removeControl(layerId = "infoControl") %>%
+        addControl(layerId = "infoControl", html = info, position = "topright", className = "info")
       
-      #output$indTest <- renderPrint({ind})
+      output$indTest4 <- renderPrint({paste0("four = ", ind)})
       
       #output$env <- renderPrint({parent.frame()})
-    
+      
+      #ind <- "s"
+      ind <<- "s"
+      
     }, ignoreNULL = TRUE)
   
   }
