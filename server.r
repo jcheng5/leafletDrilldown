@@ -30,13 +30,13 @@ statesSubDF <- states@data
 
 
 # simplify shapefile for improved performance
-tol <- 0.0001
+tol <- 0.00001
 
 countriesSimplified <- gSimplify(countries, tol, topologyPreserve = TRUE)
 countries <- SpatialPolygonsDataFrame(countriesSimplified, data = countriesDF) 
 
 statesSimplified <- gSimplify(statesSub, tol, topologyPreserve = TRUE)
-states <- SpatialPolygonsDataFrame(statesSimplified, data = statesSubDF) 
+statesSub <- SpatialPolygonsDataFrame(statesSimplified, data = statesSubDF) 
 
 
 # Create the country map at app initialization
@@ -54,8 +54,8 @@ map <- leaflet(countries) %>%
   addLegend(layerId = "legend", title = c("Population"), position = "bottomright", pal = paletteCountry, values = ~POP_EST) %>%
   addLayersControl(baseGroups = c("OSM", "Stamen Toner Lite"),
                    options = layersControlOptions(collapsed = FALSE)) %>%
-  addControl(layerId = "infoControl", html = info, position = "topright", className = "info") %>% 
-  mapOptions(zoomToLimits="always")
+  addControl(layerId = "infoControl", html = info, position = "topright", className = "info") #%>% 
+  #mapOptions(zoomToLimits="always")
   
 
 
@@ -116,7 +116,7 @@ shinyServer(function(input, output, session) {
 
 
   ### if click on country, render state map for just that country
-  tryCatch({
+  #tryCatch({
   if(ind == "c"){
     output$indTest2 <- renderPrint({paste0("two = ", ind)})
     observeEvent(input$mymap_shape_click, {
@@ -152,7 +152,7 @@ shinyServer(function(input, output, session) {
   
   }
   
-  }, error = function(e) return())
+  #}, error = function(e) return())
 
    
   ### if select state action button, render state map
