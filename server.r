@@ -24,6 +24,7 @@ states@data$geonunit[is.na(states@data$geonunit)] <- "Unknown"
 
 # Create the country map at app initialization
 paletteCountry <- colorQuantile("YlGnBu", countries$POP_EST, n = 10)
+info <- paste0("Hover over a country to view information.")
 
 mapCountry <- leaflet(countries) %>%
   addProviderTiles(provider = "Stamen.TonerLite") %>%
@@ -31,7 +32,8 @@ mapCountry <- leaflet(countries) %>%
               stroke = FALSE, fillOpacity = 0.5, smoothFactor = 0.5,
               color = ~paletteCountry(POP_EST)
   ) %>%
-  addLegend(title = c("Population"), position = "bottomright", pal = paletteCountry, values = ~POP_EST)
+  addLegend(title = c("Population"), position = "bottomright", pal = paletteCountry, values = ~POP_EST) %>%
+  addControl(layerId = "infoControl", html = info, position = "topright", classes = "info")
 
 # Initialize ind variable in the global environment
 ind <- "c"
