@@ -12,18 +12,32 @@ library(sp)
 # load country and state data; convert NA's to "Unknown"
 countries <- readOGR(dsn = "ne_10m_admin_0_countries/ne_10m_admin_0_countries.shp", 
                      layer = "ne_10m_admin_0_countries") 
+states <- readOGR(dsn = "ne_10m_admin_1_states_provinces/ne_10m_admin_1_states_provinces.shp", 
+                  layer = "ne_10m_admin_1_states_provinces")
+
+# convert NA's to "Unknown" in columns we are using
 countries@data$NAME_LONG <- factor(countries@data$NAME_LONG, levels = c(levels(countries@data$NAME_LONG), "Unknown"))
 countries@data$NAME_LONG[is.na(countries@data$NAME_LONG)] <- "Unknown"
 countriesDF <- countries@data
 
-states <- readOGR(dsn = "ne_10m_admin_1_states_provinces/ne_10m_admin_1_states_provinces.shp", 
-                  layer = "ne_10m_admin_1_states_provinces")
+
 states@data$geonunit <- factor(states@data$geonunit, levels = c(levels(states@data$geonunit), "Unknown"))
 states@data$geonunit[is.na(states@data$geonunit)] <- "Unknown"
 states@data$name <- factor(states@data$name, levels = c(levels(states@data$name), "Unknown"))
 states@data$name[is.na(states@data$name)] <- "Unknown"
 statesSub <- states
 statesSubDF <- states@data
+
+
+# simplify shapefile for improved performance
+tol <- 0.0001
+
+countriesSimplified <- gSimplify(countries, tol, topologyPreserve = TRUE)
+countries <- SpatialPolygonsDataFrame(countriesSimplified, data = countriesDF) 
+
+statesSimplified <- gSimplify(statesSub, tol, topologyPreserve = TRUE)
+states <- SpatialPolygonsDataFrame(statesSimplified, data = statesSubDF) 
+
 
 # Create the country map at app initialization
 paletteCountry <- colorQuantile("YlGnBu", countries$POP_EST, n = 10)
@@ -40,7 +54,8 @@ map <- leaflet(countries) %>%
   addLegend(layerId = "legend", title = c("Population"), position = "bottomright", pal = paletteCountry, values = ~POP_EST) %>%
   addLayersControl(baseGroups = c("OSM", "Stamen Toner Lite"),
                    options = layersControlOptions(collapsed = FALSE)) %>%
-  addControl(layerId = "infoControl", html = info, position = "topright", className = "info")
+  addControl(layerId = "infoControl", html = info, position = "topright", className = "info") %>% 
+  mapOptions(zoomToLimits="always")
   
 
 
@@ -83,7 +98,7 @@ shinyServer(function(input, output, session) {
       #output$env <- renderPrint({parent.frame()})
       
     } else{
-      output$indTest2 <- renderPrint({paste0("two = ", ind)})
+      output$indTest1 <- renderPrint({paste0("one = ", ind)})
       #output$boolean <- renderPrint({"ELSE"})
   
       #statesSub <- states[factor(states$geonunit) == input$mymap_shape_click$id,]
@@ -101,8 +116,9 @@ shinyServer(function(input, output, session) {
 
 
   ### if click on country, render state map for just that country
+  tryCatch({
   if(ind == "c"){
-    output$indTest3 <- renderPrint({paste0("three = ", ind)})
+    output$indTest2 <- renderPrint({paste0("two = ", ind)})
     observeEvent(input$mymap_shape_click, {
       
     ### State
@@ -125,16 +141,18 @@ shinyServer(function(input, output, session) {
         removeControl(layerId = "infoControl") %>%
         addControl(layerId = "infoControl", html = info, position = "topright", className = "info")
       
-      output$indTest4 <- renderPrint({paste0("four = ", ind)})
+      output$indTest2 <- renderPrint({paste0("two = ", ind)})
       
       #output$env <- renderPrint({parent.frame()})
       
-      #ind <- "s"
+      ind <- "s"
       ind <<- "s"
       
     }, ignoreNULL = TRUE)
   
   }
+  
+  }, error = function(e) return())
 
    
   ### if select state action button, render state map
